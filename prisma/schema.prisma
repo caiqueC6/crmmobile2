@@ -1,0 +1,49 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Quotation {
+  id             String       @id @default(uuid())
+  customerId     String?
+  customerName   String
+  vehicleDetails String
+  price          Float
+  additionalPrice Float?
+  source         String?
+  status         String       // NEW, IN_NEGOTIATION, CLOSED, CANCELLED
+  notes          String?
+  powercrmId     String?      // ID in PowerCRM system
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  messages       MessageLog[]
+}
+
+model MessageLog {
+  id          String   @id @default(uuid())
+  quotationId String?
+  quotation   Quotation? @relation(fields: [quotationId], references: [id])
+  phoneNumber String
+  message     String
+  messageId   String?  // ID returned from messaging API
+  status      String   // SENT, DELIVERED, READ, FAILED
+  channel     String   // WHATSAPP, SMS, EMAIL
+  createdAt   DateTime @default(now())
+}
+
+model QuotationSync {
+  id          String   @id @default(uuid())
+  syncedAt    DateTime
+  recordCount Int
+  status      String   // SUCCESS, FAILED
+  errorMessage String?
+  createdAt   DateTime @default(now())
+}
+
